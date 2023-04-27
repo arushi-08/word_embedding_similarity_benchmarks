@@ -60,8 +60,12 @@ def run_transformer_benchmark(sentence_1, sentence_2, model, tokenizer):
             outputs_2 = model(**inputs_2)
 
         # extract the embeddings for the [CLS] token for each sentence
-        embedding_1.append(outputs_1.last_hidden_state[:, 0, :].numpy())
-        embedding_2.append(outputs_2.last_hidden_state[:, 0, :].numpy())
+        embedding_1.append(
+            outputs_1.last_hidden_state[:, 1:, :].mean(dim=1).squeeze().numpy()
+        )
+        embedding_2.append(
+            outputs_2.last_hidden_state[:, 1:, :].mean(dim=1).squeeze().numpy()
+        )
     
     sims = []
     for (emb1, emb2) in zip(embedding_1, embedding_2): 
@@ -72,7 +76,6 @@ def run_transformer_benchmark(sentence_1, sentence_2, model, tokenizer):
 
 
 def run_sentence_transformer_benchmarks(sentences_1, sentences_2, model):
-    embeddings1, embeddings2 = [], []
     sims = []
     for sent1, sent2 in zip(sentences_1, sentences_2):
         embeddings1 = model.encode(sent1, convert_to_tensor=True)
@@ -121,8 +124,8 @@ def main():
     glove = se.load_glove()
     fasttext = se.load_fasttext()
 
-    bert_tokenizer = AutoTokenizer.from_pretrained(model_name='bert-base-uncased')
-    bert_model = AutoModel.from_pretrained(model_name='bert-base-uncased')
+    bert_tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
+    bert_model = AutoModel.from_pretrained('bert-base-uncased')
     bert_tokenizer.add_special_tokens({'pad_token': '[PAD]'})
     gpt2_tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
     gpt2_model = GPT2Model.from_pretrained('gpt2', output_hidden_states=True)

@@ -4,6 +4,8 @@ import torch
 from transformers import AutoTokenizer, AutoModel, GPT2Tokenizer, GPT2Model
 import scipy
 from sklearn.metrics.pairwise import cosine_similarity
+import torch.nn.functional as F
+from allennlp.modules.elmo import Elmo, batch_to_ids
 
 from data import save_word_similarity_dataset
 from static_embedding import StaticEmbeddings
@@ -59,6 +61,38 @@ def static_similarity_benchmark(model, datasets):
             )
         )
 
+def get_elmo_correlation(elmo, dataset):
+    sim=[]
+    for val in dataset['X']:
+        character_ids = batch_to_ids(val)
+
+        embeddings = elmo(character_ids)
+
+        # extract the ELMo embeddings for the two sentences
+        emb1 = embeddings['elmo_representations'][0][0]
+        emb2 = embeddings['elmo_representations'][0][1]
+
+        # calculate cosine similarity between the two ELMo embeddings
+        cosine_sim = F.cosine_similarity(emb1, emb2, dim=0)
+        mean_cosine_sim = torch.mean(cosine_sim)
+        sim.append(mean_cosine_sim.item())
+
+    return scipy.stats.spearmanr(sim, dataset['y']).correlation
+
+def get_elmo_benchmarks(datasets):
+    # Calculate results using helper function
+    options_file = "https://allennlp.s3.amazonaws.com/models/elmo/2x4096_512_2048cnn_2xhighway_5.5B/elmo_2x4096_512_2048cnn_2xhighway_5.5B_options.json"
+    weight_file = "https://allennlp.s3.amazonaws.com/models/elmo/2x4096_512_2048cnn_2xhighway_5.5B/elmo_2x4096_512_2048cnn_2xhighway_5.5B_weights.hdf5"
+
+    elmo = Elmo(options_file, weight_file, 2, dropout=0)
+
+    for data_name in datasets.keys():
+        print('Dataset size:',len(datasets[data_name]['X']))
+        print("Spearman correlation of scores on {} {}".format(
+            data_name, get_elmo_correlation(elmo, datasets[data_name]))
+            )
+
+
 
 def main():
     save_word_similarity_dataset()
@@ -77,6 +111,7 @@ def main():
 
     bert_similarity_benchmark(datasets)
     gpt2_similarity_benchmark(datasets)
+    get_elmo_benchmarks(datasets)
 
 
 if __name__ == '__init__':
