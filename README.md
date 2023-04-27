@@ -14,5 +14,6 @@ static_embedding.py - loads static word embeddings models
 I have used the Gensim library to load static embeddings, HuggingFace library to get the BERT, GPT-2, Allennlp for ELMo and lastly, sentence-transformers library for Sentence-BERT and GPT-2 models.
 
 
-### References used : https://github.com/kudkudak/word-embeddings-benchmarks
+### References used : 
+https://github.com/kudkudak/word-embeddings-benchmarks
 https://github.com/nlptown/nlp-notebooks/blob/master/Simple%20Sentence%20Similarity.ipynb
