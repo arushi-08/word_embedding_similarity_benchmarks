@@ -1,6 +1,6 @@
 # Study of Low Dimensional Embeddings
 
-The code is organized in following files:
+The code is organized in following files: \
 word_similarity_benchmarks.py - runs the word similarity experiments using static and contextual embeddings. \
 sentence_similarity_benchmarks.py - runs the sentence similarity experiments using static and contextual embeddings. \
 bert_layer_wise_benchmark.py - runs the word similarity experiments using different BERT model's hidden layer outputs. \
